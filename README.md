@@ -5,6 +5,7 @@ Work with [CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/
 ## Features
 
 * My personal static file storge by S3 bucket and distributed by Cloudfront with **image resizing** on the fly
+![](https://img.codiy.net/repo/aws-playbook/2021-12/29103151.png)
 
 ## Cloudfront Distribution
 
@@ -34,4 +35,6 @@ Distribution `s3.codiy.net` for whole bucket objects.
 * Upload lambda source code zip file to deploy lambda function
 * By lifecycle configuration will automatically expiration and delete lambda source code zip files.
 
+## References
 
+* [HoraceShmorace/Image-Flex](https://github.com/HoraceShmorace/Image-Flex)
