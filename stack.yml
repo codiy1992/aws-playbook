@@ -1,0 +1,58 @@
+- set_fact:
+    execute_changeset: "{{ execute | default(false) }}"
+    template_paramters: "{{ paramters | default({}) }}"
+    termination_protection: "{{ protect | default('no') }}"
+    region: "{{ region |  default(lookup('env', 'AWS_DEFAULT_REGION')) }}"
+
+- name: check stack exists or not
+  cloudformation_info:
+    region: "{{ region }}"
+    stack_name: "{{ stack_name }}"
+  register: result
+
+- set_fact:
+    cfn_stack_exists: "{{ result.cloudformation.keys() | length > 0 }}"
+
+- debug: var=cfn_stack_exists
+
+- name: create stack
+  cloudformation:
+    stack_name: "{{ stack_name }}"
+    state: present
+    region: "{{ region }}"
+    disable_rollback: false
+    termination_protection: "{{ termination_protection | default('no') }}"
+    template: "{{ cfn_template }}"
+    template_parameters: "{{ template_paramters }}"
+  when: not cfn_stack_exists | bool
+
+- name: create changeset
+  cloudformation:
+    stack_name: "{{ stack_name }}"
+    state: present
+    region: "{{ region }}"
+    disable_rollback: false
+    create_changeset: yes
+    template: "{{ cfn_template }}"
+    template_parameters: "{{ template_paramters }}"
+  register: result
+  when: cfn_stack_exists | bool
+
+- set_fact:
+    change_set: "{{ result.warnings[0] | regex_search('(Ansible[^ ]*)') }}"
+  when: cfn_stack_exists | bool
+
+- debug: var=change_set
+  when: cfn_stack_exists | bool
+
+- name: apply changeset
+  command: >
+    aws cloudformation execute-change-set --region {{ region }}
+     --stack-name "{{ stack_name }}"
+     --change-set-name "{{ change_set }}"
+  register: result
+  when: (cfn_stack_exists | bool) and (change_set != "") and (execute_changeset | bool)
+
+- debug: var=result
+  when: (cfn_stack_exists | bool) and (change_set != "") and (execute_changeset | bool)
+

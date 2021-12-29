@@ -1,0 +1,262 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: managed policy
+Resources:
+  DenyEC2Policy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcDenyEC2Policy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - "ec2:*KeyPair"
+            Resource: "*"
+
+  DenyRegionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcDenyRegionPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - "*"
+            Resource: "*"
+            Condition:
+              StringNotEquals:
+                aws:RequestedRegion: "ap-southeast-1"
+
+  DenyIAMPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcDenyIAMPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - "iam:AddUserToGroup"
+              - "iam:RemoveUserFromGroup"
+              - "iam:CreateUser"
+              - "iam:CreateGroup"
+              - "iam:DeleteUser"
+              - "iam:DeleteGroup"
+              - "iam:UpdateUser"
+              - "iam:UpdateGroup"
+              - "iam:AttachGroupPolicy"
+              - "iam:AttachUserPolicy"
+              - "iam:DeleteGroupPolicy"
+              - "iam:DeleteUserPolicy"
+              - "iam:DetachGroupPolicy"
+              - "iam:DetachUserPolicy"
+              - "iam:PutGroupPolicy"
+              - "iam:PutUserPolicy"
+              - "sts:AssumeRole"
+            Resource: "*"
+
+  DenyEC2InstancesPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcDenyEC2InstancesPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Action:
+              - "ssm:StartSession"
+              - "ec2-instance-connect:SendSSHPublicKey"
+              - "ec2:*"
+            Resource:
+              - "arn:aws:ec2:*:*:instance/i-09fbf8775a7583db5"
+
+  SystemSessionManageBasePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcSystemSessionManageBasePolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ssm:DescribeSessions"
+              - "ssm:GetConnectionStatus"
+              - "ssm:DescribeInstanceProperties"
+              - "ec2:DescribeInstances"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "ssm:TerminateSession"
+            Resource: "arn:aws:ssm:*:*:session/${aws:username}-*"
+
+  SystemSessionManageStartSessionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcSystemSessionManageStartSessionPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ssm:StartSession"
+            Condition:
+              StringLike:
+                ssm:resourceTag/Env:
+                  [
+                    "testing",
+                    "simulation",
+                    "staging",
+                    "production",
+                    "test",
+                    "sim",
+                    "stag",
+                    "prod",
+                  ]
+                ssm:resourceTag/Project: ["kfc"]
+              StringNotLike:
+                ssm:resourceTag/Name: ["executor"]
+            Resource: "arn:aws:ec2:*:*:instance/*"
+
+  EC2InstanceConnectPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcEC2InstanceConnectPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ec2:DescribeInstances"
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - "ec2-instance-connect:SendSSHPublicKey"
+            Condition:
+              StringEquals:
+                ec2:osuser: "ec2-user"
+            Resource: "arn:aws:ec2:*:*:instance/*"
+
+  ManageOwnAccessKeysPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcManageOwnAccessKeysPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Sid: "ManageOwnAccessKeys"
+            Action:
+              - "iam:CreateAccessKey"
+              - "iam:DeleteAccessKey"
+              - "iam:GetAccessKeyLastUsed"
+              - "iam:GetUser"
+              - "iam:ListAccessKeys"
+              - "iam:UpdateAccessKey"
+              - "iam:ChangePassword"
+            Resource: "arn:aws:iam::*:user/${aws:username}"
+
+  CloudWatchReadOnlyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcCloudWatchReadOnlyPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "resource-groups:List*"
+              - "autoscaling:Describe*"
+              - "ec2:DescribeInstances"
+              - "ElastiCache:DescribeCacheClusters"
+              - "RDS:DescribeDBClusters"
+              - "cloudwatch:Describe*"
+              - "cloudwatch:Get*"
+              - "cloudwatch:List*"
+              - "sns:Get*"
+              - "sns:List*"
+            Resource: "*"
+
+  CloudWatchLogsReadOnlyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: KfcCloudWatchLogsReadOnlyPolicy
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - "logs:Get*"
+              - "logs:List*"
+              - "logs:Describe*"
+              - "logs:TestMetricFilter"
+              - "logs:FilterLogEvents"
+            Resource: "*"
+
+Outputs:
+  DenyEC2Policy:
+    Description: DenyEC2Policy
+    Value: !Ref "DenyEC2Policy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "DenyEC2Policy"]]
+  DenyRegionPolicy:
+    Description: DenyRegionPolicy
+    Value: !Ref "DenyRegionPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "DenyRegionPolicy"]]
+  DenyIAMPolicy:
+    Description: DenyIAMPolicy
+    Value: !Ref "DenyIAMPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "DenyIAMPolicy"]]
+  DenyEC2InstancesPolicy:
+    Description: DenyEC2InstancesPolicy
+    Value: !Ref "DenyEC2InstancesPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "DenyEC2InstancesPolicy"]]
+  SystemSessionManageBasePolicy:
+    Description: SystemSessionManageBasePolicy
+    Value: !Ref "SystemSessionManageBasePolicy"
+    Export:
+      Name:
+        !Join [":", [!Ref "AWS::StackName", "SystemSessionManageBasePolicy"]]
+  SystemSessionManageStartSessionPolicy:
+    Description: SystemSessionManageStartSessionPolicy
+    Value: !Ref "SystemSessionManageStartSessionPolicy"
+    Export:
+      Name:
+        !Join [
+          ":",
+          [!Ref "AWS::StackName", "SystemSessionManageStartSessionPolicy"],
+        ]
+  EC2InstanceConnectPolicy:
+    Description: EC2InstanceConnectPolicy
+    Value: !Ref "EC2InstanceConnectPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "EC2InstanceConnectPolicy"]]
+  ManageOwnAccessKeysPolicy:
+    Description: ManageOwnAccessKeysPolicy
+    Value: !Ref "ManageOwnAccessKeysPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "ManageOwnAccessKeysPolicy"]]
+  CloudWatchReadOnlyPolicy:
+    Description: CloudWatchReadOnlyPolicy
+    Value: !Ref "CloudWatchReadOnlyPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "CloudWatchReadOnlyPolicy"]]
+  CloudWatchLogsReadOnlyPolicy:
+    Description: CloudWatchLogsReadOnlyPolicy
+    Value: !Ref "CloudWatchLogsReadOnlyPolicy"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "CloudWatchLogsReadOnlyPolicy"]]

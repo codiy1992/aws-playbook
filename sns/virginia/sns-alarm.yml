@@ -1,0 +1,12 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: us-east-1
+        stack_name: sns-alarm
+        cfn_template_ansible: ../templates/cfn-sns-alarm.yml
+
+    - include_tasks: ../tasks/stack.yml

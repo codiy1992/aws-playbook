@@ -1,0 +1,8 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: '*.codiy.net'
+      ValidationMethod: 'DNS'

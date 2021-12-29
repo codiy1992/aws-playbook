@@ -1,0 +1,72 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: buckets
+
+Resources:
+
+  ResourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: {{ bucket_name }}
+      AccessControl: PublicRead
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['Authorization', '*']
+            AllowedMethods: [GET, POST, PUT, HEAD]
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3000
+      LifecycleConfiguration:
+        Rules:
+          - Id: Remove Old Incomplete Multipart Upload
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 3
+          - Id: Remove Old Thumbnails
+            Status: Enabled
+            Prefix: _optimized/_thumbnail
+            ExpirationInDays: 3
+          - Id: Auto Transition
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 7
+                StorageClass: INTELLIGENT_TIERING
+
+  ResourceBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref 'ResourceBucket'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS:
+              - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E1OLTD0NSCR6TP'
+          Action: 's3:GetObject'
+          Resource: !Sub 'arn:aws:s3:::${ResourceBucket}/*'
+        - Effect: Allow
+          Principal:
+            AWS:
+              - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E2GMNO4PRLDXA5'
+          Action: 's3:GetObject'
+          Resource:
+            - !Sub 'arn:aws:s3:::${ResourceBucket}/_optimized/*'
+        - Effect: Allow
+          Principal:
+            AWS:
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/LambdaRole-us-east-1-func-cdn-image-resize-origin-response'
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+          Resource:
+            - !Sub 'arn:aws:s3:::${ResourceBucket}/_optimized/*'

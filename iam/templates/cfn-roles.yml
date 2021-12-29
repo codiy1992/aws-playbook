@@ -1,0 +1,46 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: iam roles
+
+Parameters:
+
+  PoliciesStackName:
+    Type: String
+    Default: iam-policies
+    Description: policies stack name
+
+Resources:
+
+  RDSEnhancedMonitoringRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: RDSEnhancedMonitoringRole
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'monitoring.rds.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      MaxSessionDuration: 3600
+
+  LambdaExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: LambdaExecutionRole
+        AssumeRolePolicyDocument:
+          Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+          Version: '2012-10-17'
+        ManagedPolicyArns:
+          - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+

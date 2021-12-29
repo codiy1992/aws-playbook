@@ -1,0 +1,99 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: lambda
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: S3 Bucket Name
+
+  S3ObjectKey:
+    Type: String
+    Description: S3 Object Key
+
+  S3ObjectVersion:
+    Type: String
+    Description: S3 Object Version
+
+  AlarmSNSStackName:
+     Type: String
+     Default: {{ alarm_sns_stack_name }}
+     Description: alarm sns stack name
+
+
+Resources:
+  LambdaEdgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join
+                  - '-'
+                  - - 'LambdaRole'
+                    - !Sub '${AWS::Region}'
+                    - {{ lambda_name }}
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+              - edgelambda.amazonaws.com
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyDocument:
+            Statement:
+            - Action: # To Get Lambda Function Code From us-east-1 to Edge
+               - 'lambda:GetFunction'
+              Effect: Allow
+              Resource:
+                - !Sub 'arn:aws:lambda:us-east-1:${AWS::AccountId}:function:func-cdn-image-resize-*'
+            Version: '2012-10-17'
+          PolicyName: LambdaEdgePolicy
+
+  LambdaFunction:
+     Type: AWS::Lambda::Function
+     Properties:
+       FunctionName: {{ lambda_name }}
+       Handler: index.handler
+       Role:
+         Fn::GetAtt: [LambdaEdgeRole, Arn]
+       Code:
+         S3Bucket: !Ref 'S3BucketName'
+         S3Key: !Ref 'S3ObjectKey'
+         S3ObjectVersion: !Ref 'S3ObjectVersion'
+       Runtime: {{ lambda_language }}
+       MemorySize: 128
+       Timeout: 3
+       Environment:
+         Variables: {}
+
+  LambdaFunctionVersion{{ lambda_version | default(lookup('pipe','date \"+%Y%m%d%H%M%S\"')) }}:
+    Type: "AWS::Lambda::Version"
+    Properties:
+      FunctionName: !Ref 'LambdaFunction'
+      Description: "A version of {{ lambda_name }}"
+
+  LambdaErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Join
+                - '-'
+                - - !Ref 'LambdaFunction'
+                  - 'error-rate-too-high'
+      AlarmDescription: "lambda function error rate too high"
+      Namespace: AWS/Lambda
+      Dimensions:
+          - Name: FunctionName
+            Value: !Ref 'LambdaFunction'
+      MetricName: Errors
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      AlarmActions:
+        - Fn::ImportValue:
+            !Join [':', [!Ref 'AlarmSNSStackName', 'AlarmSNSArn']]

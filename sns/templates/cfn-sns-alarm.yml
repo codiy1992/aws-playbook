@@ -1,0 +1,28 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: sns
+
+Resources:
+  TopicAlarm:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: alarm
+      TopicName: alarm
+      FifoTopic: false
+      Subscription:
+        - Endpoint: 'mail@codiy.net'
+          Protocol: email
+
+  TopicSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: 'arn:aws:lambda:ap-southeast-1:146617882894:function:func-alarm-sns-dingtalk'
+      Protocol: lambda
+      TopicArn: !Ref 'TopicAlarm'
+
+Outputs:
+  AlarmSNSArn:
+    Description: The arn of the Alarm SNS Topic
+    Value: !Ref 'TopicAlarm'
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "AlarmSNSArn"]]

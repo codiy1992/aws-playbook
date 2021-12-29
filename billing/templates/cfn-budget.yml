@@ -1,0 +1,25 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: buckets
+
+Resources:
+
+  BudgetMonthlyTotal:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetLimit:
+          Amount: 10.0
+          Unit: USD
+        BudgetName: 'MonthlyLimit'
+        BudgetType: 'COST'
+        TimeUnit: MONTHLY
+      NotificationsWithSubscribers:
+        - Notification:
+            ComparisonOperator: 'GREATER_THAN'
+            NotificationType: 'ACTUAL'
+            Threshold: 80
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: 'mail@codiy.net'
+              SubscriptionType: 'EMAIL'

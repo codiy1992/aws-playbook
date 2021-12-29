@@ -1,0 +1,29 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: buckets
+
+Resources:
+
+  InternalBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: {{ bucket_name }}
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: Remove Old Incomplete Multipart Upload
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: Auto Expiration
+            Status: Enabled
+            Prefix: lambda
+            ExpirationInDays: 1
+            NoncurrentVersionExpirationInDays: 1

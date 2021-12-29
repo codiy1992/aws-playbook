@@ -1,0 +1,130 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: iam user groups
+
+Parameters:
+  PoliciesStackName:
+    Type: String
+    Default: iam-policies
+    Description: policies stack name
+
+Resources:
+  AllUsers:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: AllUsers
+      Path: /
+      ManagedPolicyArns:
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "DenyEC2Policy"]]
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "DenyIAMPolicy"]]
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "DenyEC2InstancesPolicy"]]
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "ManageOwnAccessKeysPolicy"]]
+      Policies:
+        - PolicyName: KfcAllUsersPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "iam:ChangePassword"
+                Resource: "*"
+
+  Administrators:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: Administrators
+      ManagedPolicyArns:
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "DenyIAMPolicy"]]
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "DenyEC2InstancesPolicy"]]
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "ManageOwnAccessKeysPolicy"]]
+      Path: /
+      Policies:
+        - PolicyName: KfcAdministratorPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: DenyManageEC2KeyPairs
+                Effect: Deny
+                Action:
+                  - "ec2:*KeyPair"
+                Resource: "*"
+              - Sid: AdministratorAccessForRegions
+                Effect: Allow
+                Action: "*"
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    aws:RequestedRegion: ["cn-north-1", "cn-northwest-1"]
+              - Sid: AllowGlobalServices
+                Effect: Allow
+                Action:
+                  - "iam:*"
+                  - "health:*"
+                  - "support:*"
+                  - "cloudfront:*"
+                  - "shield:*"
+                  - "waf:*"
+                  - "waf-regional:*"
+                  - "tag:*"
+                  - "resource-groups:*"
+                  - "s3:*"
+                Resource: "*"
+
+  CloudWatchers:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: CloudWatchers
+      ManagedPolicyArns:
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "CloudWatchReadOnlyPolicy"]]
+      Path: /
+
+  EC2ConnectAdmins:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: EC2ConnectAdmins
+      ManagedPolicyArns:
+        - Fn::ImportValue:
+            !Join [":", [!Ref "PoliciesStackName", "EC2InstanceConnectPolicy"]]
+        - Fn::ImportValue:
+            !Join [
+              ":",
+              [!Ref "PoliciesStackName", "SystemSessionManageBasePolicy"],
+            ]
+        - Fn::ImportValue:
+            !Join [
+              ":",
+              [
+                !Ref "PoliciesStackName",
+                "SystemSessionManageStartSessionPolicy",
+              ],
+            ]
+      Path: /
+
+Outputs:
+  AllUsers:
+    Description: AllUsers
+    Value: !Ref "AllUsers"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "AllUsers"]]
+  Administrators:
+    Description: Administrators
+    Value: !Ref "Administrators"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "Administrators"]]
+  CloudWatchers:
+    Description: CloudWatchers
+    Value: !Ref "CloudWatchers"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "CloudWatchers"]]
+  EC2ConnectAdmins:
+    Description: EC2ConnectAdmins
+    Value: !Ref "EC2ConnectAdmins"
+    Export:
+      Name: !Join [":", [!Ref "AWS::StackName", "EC2ConnectAdmins"]]

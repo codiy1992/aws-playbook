@@ -1,0 +1,30 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - set_fact:
+        region: us-east-1
+        env: prod
+        stack_name: lambda-alarm-sns-to-dingtalk
+        cfn_template_ansible: ../templates/cfn-alarm-sns-to-dingtalk.yml
+
+    - set_fact:
+        lambda_language: python3.9
+        lambda_entry: index.py
+        lambda_name: func-alarm-sns-dingtalk
+        alarm_sns_stack_name: sns-alarm
+
+    - set_fact:
+        src_path: ../src/alarm-dingtalk
+        archive_dir: /tmp/lambda/alarm-dingtalk
+        script: |
+        zip_name: "{{ lambda_name }}.zip"
+        dingtalk_token: xxxx
+
+    - set_fact:
+        s3_bucket: kfc.internal.virginia
+        s3_object_key: "{{ zip_name }}"
+        s3_object_version: ''
+
+    - include_tasks: ../tasks/stack.yml

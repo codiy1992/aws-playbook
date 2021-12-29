@@ -1,0 +1,15 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: ap-southeast-1
+        stack_name: s3-singapore-storage
+        cfn_template_ansible: ../templates/cfn-s3-storage.yml
+
+    - set_fact:
+        bucket_name: s3.codiy.net
+
+    - include_tasks: ../tasks/stack.yml

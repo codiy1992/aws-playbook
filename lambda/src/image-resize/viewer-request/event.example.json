@@ -1,0 +1,58 @@
+{
+    "Records": [
+        {
+            "cf": {
+                "config": {
+                    "distributionDomainName": "d2j96d08qq3631.cloudfront.net",
+                    "distributionId": "E12P4WIM1DMOG9",
+                    "eventType": "viewer-request",
+                    "requestId": "USWYd1Niefz_ogNCnA2BJTvRSHSsRx3WWHkliHhXNy5LI2BjvwyVnA=="
+                },
+                "request": {
+                    "clientIp": "8.218.98.109",
+                    "headers": {
+                        "host": [
+                            {
+                                "key": "Host",
+                                "value": "img.codiy.net"
+                            }
+                        ],
+                        "user-agent": [
+                            {
+                                "key": "User-Agent",
+                                "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+                            }
+                        ],
+                        "cache-control": [
+                            {
+                                "key": "cache-control",
+                                "value": "max-age=0"
+                            }
+                        ],
+                        "accept": [
+                            {
+                                "key": "accept",
+                                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+                            }
+                        ],
+                        "accept-encoding": [
+                            {
+                                "key": "accept-encoding",
+                                "value": "gzip, deflate, br"
+                            }
+                        ],
+                        "accept-language": [
+                            {
+                                "key": "accept-language",
+                                "value": "zh-CN,zh;q=0.9,en;q=0.8"
+                            }
+                        ]
+                    },
+                    "method": "GET",
+                    "querystring": "d=200x200",
+                    "uri": "/repo/dotfiles/2021-12/22220004.png"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,109 @@
+{
+    "Records": [
+        {
+            "cf": {
+                "config": {
+                    "distributionDomainName": "d2j96d08qq3631.cloudfront.net",
+                    "distributionId": "E12P4WIM1DMOG9",
+                    "eventType": "origin-response",
+                    "requestId": "nk2DjyUd0mHPqPjRqK8YBVELE2Fdjuz6pLWye18JBNyCtt8r6BWP_g=="
+                },
+                "request": {
+                    "clientIp": "8.218.98.109",
+                    "headers": {
+                        "x-forwarded-for": [
+                            {
+                                "key": "X-Forwarded-For",
+                                "value": "8.218.98.109"
+                            }
+                        ],
+                        "user-agent": [
+                            {
+                                "key": "User-Agent",
+                                "value": "Amazon CloudFront"
+                            }
+                        ],
+                        "via": [
+                            {
+                                "key": "Via",
+                                "value": "1.1 e46c161e985a77013d082896178de96e.cloudfront.net (CloudFront)"
+                            }
+                        ],
+                        "accept-encoding": [
+                            {
+                                "key": "Accept-Encoding",
+                                "value": "br,gzip"
+                            }
+                        ],
+                        "host": [
+                            {
+                                "key": "Host",
+                                "value": "s3.codiy.net.s3.ap-southeast-1.amazonaws.com"
+                            }
+                        ],
+                        "cache-control": [
+                            {
+                                "key": "Cache-Control",
+                                "value": "max-age=0"
+                            }
+                        ]
+                    },
+                    "method": "GET",
+                    "origin": {
+                        "s3": {
+                            "authMethod": "origin-access-identity",
+                            "customHeaders": {},
+                            "domainName": "s3.codiy.net.s3.ap-southeast-1.amazonaws.com",
+                            "path": "/_optimized",
+                            "region": "ap-southeast-1"
+                        }
+                    },
+                    "querystring": "w=100&h=200&e=webp&s=/repo/dotfiles/2021-12/22220004.png",
+                    "uri": "/_thumbnail/repo/dotfiles/2021-12/100x200/22220004.webp"
+                },
+                "response": {
+                    "headers": {
+                        "x-amz-request-id": [
+                            {
+                                "key": "x-amz-request-id",
+                                "value": "WYRA0YX3J1RJR4TC"
+                            }
+                        ],
+                        "x-amz-id-2": [
+                            {
+                                "key": "x-amz-id-2",
+                                "value": "s62OKx8Gr019wzlmMqdWaC6h/kVDecr38O0wQYCVq2e9n/U/tkkJexyADQrlSqVYRqp5aDt0gEw="
+                            }
+                        ],
+                        "date": [
+                            {
+                                "key": "Date",
+                                "value": "Tue, 28 Dec 2021 06:16:26 GMT"
+                            }
+                        ],
+                        "server": [
+                            {
+                                "key": "Server",
+                                "value": "AmazonS3"
+                            }
+                        ],
+                        "content-type": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/xml"
+                            }
+                        ],
+                        "transfer-encoding": [
+                            {
+                                "key": "Transfer-Encoding",
+                                "value": "chunked"
+                            }
+                        ]
+                    },
+                    "status": "404",
+                    "statusDescription": "Not Found"
+                }
+            }
+        }
+    ]
+}

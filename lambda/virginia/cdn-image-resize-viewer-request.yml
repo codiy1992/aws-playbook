@@ -1,0 +1,28 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - set_fact:
+        region: us-east-1
+        stack_name: lambda-cdn-image-resize-viewer-request
+        cfn_template_ansible: ../templates/cfn-cdn-image-resize-viewer-request.yml
+
+    - set_fact:
+        lambda_language: nodejs14.x
+        lambda_entry: index.js
+        lambda_name: func-cdn-image-resize-viewer-request
+        alarm_sns_stack_name: sns-alarm
+
+    - set_fact:
+        src_path: ../src/image-resize/viewer-request
+        archive_dir: /tmp/lambda/image-resize
+        script: |
+        zip_name: "{{ lambda_name }}.zip"
+
+    - set_fact:
+        s3_bucket: kfc.internal.virginia
+        s3_object_key: "{{ zip_name }}"
+        s3_object_version: ''
+
+    - include_tasks: ../tasks/stack.yml

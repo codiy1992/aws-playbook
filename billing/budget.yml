@@ -1,0 +1,12 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: ap-southeast-1
+        stack_name: billing-budgets
+        cfn_template_ansible: ../templates/cfn-budget.yml
+
+    - include_tasks: ./tasks/stack.yml

@@ -1,0 +1,173 @@
+---
+# Cloufront Compress Only supports text-based formats
+AWSTemplateFormatVersion: 2010-09-09
+Description: cloudfront distribution
+Resources:
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - '{{ alias }}'
+        Enabled: True
+        HttpVersion: http2
+        IPV6Enabled: False
+        # WebACLId: !GetAtt WebACL.Arn
+        DefaultCacheBehavior:
+          AllowedMethods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE'] # For Forward Requests To Origin
+          CachedMethods: ['GET', 'HEAD', 'OPTIONS'] # For Cache Response
+          CachePolicyId: !Ref 'CachePolicy'
+          OriginRequestPolicyId: !Ref 'OriginRequestPolicy'
+          ResponseHeadersPolicyId: !Ref 'ResponseHeadersPolicy'
+          Compress: True
+          TargetOriginId: s3-origin
+          ViewerProtocolPolicy: redirect-to-https
+{% if (with_lambda_function | default(false)) %}
+          LambdaFunctionAssociations:
+            - EventType: 'viewer-request'
+              LambdaFunctionARN: !Sub 'arn:aws:lambda:us-east-1:${AWS::AccountId}:function:{{ viewer_request_function_version }}'
+            - EventType: 'origin-response'
+              LambdaFunctionARN: !Sub 'arn:aws:lambda:us-east-1:${AWS::AccountId}:function:{{ origin_response_function_version }}'
+{% endif %}
+        ViewerCertificate:
+          AcmCertificateArn: !Sub 'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/cf26abe2-ce7c-4b5e-8275-3c0ea7b6e277'
+          MinimumProtocolVersion: 'TLSv1.2_2021'
+          SslSupportMethod: 'sni-only'
+        Origins:
+          - ConnectionAttempts: 3
+            ConnectionTimeout: 10
+            Id: s3-origin
+            DomainName: s3.codiy.net.s3.ap-southeast-1.amazonaws.com
+{% if (origin_path | default(false)) %}
+            OriginPath: {{ origin_path }}
+{% endif %}
+            S3OriginConfig:
+              # Only Allow CloudFront URL To Access S3 Bucket Objects, Disable Amazon S3 URL
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginAccessIdentity}
+
+  OriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: 'cloudfront origin access identity for {{ alias }}'
+
+  # 缓存策略
+  CachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: "CachePolicyFor{{ policy_suffix }}"
+        Comment: 'My Cache Policy'
+        DefaultTTL: 86400
+        MaxTTL: 31536000
+        MinTTL: 1
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          EnableAcceptEncodingBrotli: True
+          EnableAcceptEncodingGzip: True
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+{% if (with_cache_querystring | default(false)) %}
+            QueryStringBehavior: whitelist
+            QueryStrings: ['d', 'w', 'h']
+{% else %}
+            QueryStringBehavior: none
+{% endif %}
+
+  # 源请求策略
+  OriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: "OriginRequestPolicyFor{{ policy_suffix }}"
+        Comment: 'My Origin Request Policy for S3 Origin with CORS'
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - origin
+            - access-control-request-headers
+            - access-control-request-method
+        CookiesConfig:
+          CookieBehavior: none
+        QueryStringsConfig:
+{% if (with_forwarded_querystring | default(false)) %}
+          QueryStringBehavior: whitelist
+          QueryStrings: ['w', 'h', 'e', 's']
+{% else %}
+          QueryStringBehavior: none
+{% endif %}
+  # 响应标头策略
+  ResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: "ResponseHeadersPolicyFor{{ policy_suffix }}"
+        Comment: 'Allows all origins for CORS requests, including preflight requests, and adds security headers'
+        CorsConfig:
+          AccessControlAllowCredentials: false
+          AccessControlAllowHeaders:
+            Items:
+              - '*'
+          AccessControlAllowMethods:
+            Items:
+              - 'ALL'
+          AccessControlAllowOrigins:
+            Items:
+              - '*'
+          AccessControlExposeHeaders:
+            Items:
+              - '*'
+          OriginOverride: false
+        CustomHeadersConfig:
+          Items:
+            - Header: X-Custom-Header
+              Value: codiy
+              Override: true
+        SecurityHeadersConfig:
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: SAMEORIGIN
+            Override: false
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: false
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 31536000
+            IncludeSubdomains: false
+            Preload: false
+            Override: false
+          XSSProtection:
+            Protection: true
+            ModeBlock: true
+            Override: false
+
+  # @link https://github.com/HoraceShmorace/Image-Flex/blob/master/template.yaml
+  # WebACL:
+    # Type: AWS::WAFv2::WebACL
+    # Properties:
+      # DefaultAction:
+        # Allow: {}
+      # Name: !Sub ${AWS::StackName}-WebAcl
+      # Rules:
+        # - Name: AWS-AWSManagedRulesCommonRuleSet
+          # Priority: 0
+          # OverrideAction:
+            # None: {}
+          # VisibilityConfig:
+            # SampledRequestsEnabled: true
+            # CloudWatchMetricsEnabled: true
+            # MetricName: !Sub ${AWS::StackName}-MetricForAMRCRS
+          # Statement:
+            # ManagedRuleGroupStatement:
+              # VendorName: AWS
+              # Name: AWSManagedRulesCommonRuleSet
+              # ExcludedRules:
+                # - Name: NoUserAgent_HEADER
+      # Scope: CLOUDFRONT
+      # VisibilityConfig:
+        # SampledRequestsEnabled: true
+        # CloudWatchMetricsEnabled: true
+        # MetricName: !Sub ${AWS::StackName}-WebAcl

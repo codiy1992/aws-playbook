@@ -1,0 +1,24 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: ap-southeast-1
+        stack_name: cdn-img-codiy-net
+        cfn_template_ansible: ../templates/cfn-cloudfront.yml
+
+    - set_fact:
+        alias: img.codiy.net
+        origin_path: /_optimized
+        policy_suffix: ImgCodiyNet
+
+    - set_fact:
+        with_cache_querystring: true
+        with_forwarded_querystring: true
+        with_lambda_function: true
+        viewer_request_function_version: func-cdn-image-resize-viewer-request:18
+        origin_response_function_version: func-cdn-image-resize-origin-response:20
+
+    - include_tasks: ./tasks/stack.yml

@@ -1,0 +1,15 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: us-east-1
+        stack_name: s3-internal
+        cfn_template_ansible: ../templates/cfn-s3-internal.yml
+
+    - set_fact:
+        bucket_name: kfc.internal.virginia
+
+    - include_tasks: ../tasks/stack.yml

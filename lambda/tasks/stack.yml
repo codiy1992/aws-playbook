@@ -1,0 +1,48 @@
+- name: Before Archive
+  shell: |
+    cd {{ src_path }}
+    mkdir -p {{ archive_dir }}
+    rm -fr {{ archive_dir }}/{{ zip_name }}
+    {{ script }}
+
+- name: Create zip archive
+  archive:
+    path: "{{ src_path }}/"
+    dest: "{{ archive_dir }}/{{ zip_name }}"
+    format: zip
+
+- name: Upload to S3
+  aws_s3:
+    mode: put
+    src: "{{ archive_dir }}/{{ zip_name }}"
+    region: "{{ region }}"
+    bucket: "{{ s3_bucket }}"
+    object: "lambda/{{ s3_object_key }}"
+
+- name: Get Object Version
+  command: >
+    aws s3api head-object --output json
+      --region {{ region }}
+      --bucket "{{ s3_bucket }}"
+      --key "lambda/{{ s3_object_key }}"
+  register: result
+
+- set_fact:
+    s3_object_version: '{{ (result.stdout | from_json)["VersionId"] }}'
+
+- set_fact:
+    paramters:
+      S3BucketName: "{{ s3_bucket }}"
+      S3ObjectKey: "lambda/{{ s3_object_key }}"
+      S3ObjectVersion: "{{ s3_object_version }}"
+
+- set_fact:
+    cfn_template: "/tmp/cfn-template-{{ stack_name }}"
+
+- name:
+  template:
+    src: "{{ cfn_template_ansible }}"
+    dest: "{{ cfn_template }}"
+
+- include_tasks: ../../stack.yml
+

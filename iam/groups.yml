@@ -1,0 +1,11 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - set_fact:
+        region: ap-southeast-1
+        stack_name: iam-groups
+        cfn_template: ./templates/cfn-groups.yml
+
+    - include_tasks: ../stack.yml

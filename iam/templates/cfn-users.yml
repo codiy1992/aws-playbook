@@ -1,0 +1,59 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: iam users
+
+Parameters:
+  GourpsStackName:
+    Type: String
+    Default: iam-groups
+    Description: groups stack name
+
+  PoliciesStackName:
+    Type: String
+    Default: iam-policies
+    Description: policies stack name
+
+Resources:
+  # ----------------------- Administrator -----------------------
+  ZhengJianFeng:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: codiy
+      LoginProfile:
+        Password: WhatTheFuck
+        PasswordResetRequired: true
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+      Path: /
+  # ----------------------- Rclone -----------------------
+  # @link https://docs.aws.amazon.com/zh_cn/AmazonS3/latest/userguide/example-policies-s3.html
+  Rclone:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: rclone
+      Path: /
+      Policies:
+        - PolicyName: KfcRclonePolicy
+          PolicyDocument:
+            Statement:
+            - Sid: AllowListBuckets
+              Effect: Allow
+              Action:
+                - 's3:ListAllMyBuckets'
+              Resource: 'arn:aws:s3:::*'
+            - Sid: AllowManageBucketObjects
+              Effect: Allow
+              Action:
+                - 's3:ListBucket'
+                - 's3:GetBucketLocation'
+                - 's3:GetObject'
+                - 's3:GetObjectAcl'
+                - 's3:GetObjectVersion'
+                - 's3:PutObject'
+                - 's3:PutObjectAcl'
+                - 's3:DeleteObject'
+                - 's3:DeleteObjectAcl'
+                - 's3:DeleteObjectVersion'
+              Resource:
+                - 'arn:aws:s3:::s3.codiy.net/*'
+                - 'arn:aws:s3:::s3.codiy.net'
