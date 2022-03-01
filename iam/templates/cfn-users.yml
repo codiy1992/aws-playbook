@@ -20,7 +20,7 @@ Resources:
     Properties:
       UserName: codiy
       LoginProfile:
-        Password: WhatTheFuck
+        Password: WhatTheFuck123
         PasswordResetRequired: true
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
