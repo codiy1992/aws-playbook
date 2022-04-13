@@ -74,7 +74,7 @@ Resources:
         - Effect: Allow
           Principal:
             AWS:
-              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/lambda-dict-query-LambdaFunctionRole-16GGUWZ4T2TE'
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/lambda-dict-query-LambdaFunctionRole-V0PJT4VW3S0O'
           Action:
             - 's3:GetObject*'
             - 's3:PutObject*'
