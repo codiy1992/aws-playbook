@@ -16,7 +16,7 @@ Resources:
   TopicSubscription:
     Type: AWS::SNS::Subscription
     Properties:
-      Endpoint: 'arn:aws:lambda:ap-southeast-1:146617882894:function:func-alarm-sns-dingtalk'
+      Endpoint: '{{ subscription_lambda_arn }}'
       Protocol: lambda
       TopicArn: !Ref 'TopicAlarm'
 

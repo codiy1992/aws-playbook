@@ -21,7 +21,7 @@ Resources:
           - Id: Remove Old Incomplete Multipart Upload
             Status: Enabled
             AbortIncompleteMultipartUpload:
-              DaysAfterInitiation: 7
+              DaysAfterInitiation: 3
           - Id: Auto Expiration
             Status: Enabled
             Prefix: lambda

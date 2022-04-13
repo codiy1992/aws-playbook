@@ -1,0 +1,83 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: lambda
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: S3 Bucket Name
+
+  S3ObjectKey:
+    Type: String
+    Description: S3 Object Key
+
+  S3ObjectVersion:
+    Type: String
+    Description: S3 Object Version
+
+  AlarmSNSStackName:
+     Type: String
+     Default: {{ alarm_sns_stack_name }}
+     Description: alarm sns stack name
+
+
+Resources:
+  # Use SAM to create lambda function
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: {{ lambda_name }}
+      Handler: {{ lambda_entry }}
+      PackageType: Zip
+      CodeUri:
+         Bucket: !Ref 'S3BucketName'
+         Key: !Ref 'S3ObjectKey'
+         Version: !Ref 'S3ObjectVersion'
+      Architectures:
+        - x86_64
+      Runtime: {{ lambda_language }}
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowCredentials: false
+          AllowHeaders:
+            - Content-Type
+          AllowMethods:
+            - GET
+            - POST
+          AllowOrigins:
+            - '*'
+          ExposeHeaders:
+            - Content-Type
+          MaxAge: 0
+      MemorySize: 128
+      Timeout: 10
+      ReservedConcurrentExecutions: 2
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables: {}
+
+  LambdaErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Join
+                - '-'
+                - - !Ref 'LambdaFunction'
+                  - 'error-rate-too-high'
+      AlarmDescription: "lambda function error rate too high"
+      Namespace: AWS/Lambda
+      Dimensions:
+          - Name: FunctionName
+            Value: !Ref 'LambdaFunction'
+      MetricName: Errors
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      AlarmActions:
+        - Fn::ImportValue:
+            !Join [':', [!Ref 'AlarmSNSStackName', 'AlarmSNSArn']]

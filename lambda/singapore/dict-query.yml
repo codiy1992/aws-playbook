@@ -1,0 +1,31 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - set_fact:
+        region: ap-southeast-1
+        stack_name: lambda-dict-query
+        cfn_template_ansible: ../templates/cfn-dict-query.yml
+
+    - set_fact:
+        lambda_language: go1.x
+        lambda_entry: main
+        lambda_memory_size: 128
+        lambda_name: func-dict-query
+        alarm_sns_stack_name: sns-alarm
+
+    - set_fact:
+        src_path: ../src/dict-query
+        archive_dir: /tmp/lambda/dict-query
+        script: |
+          # Build
+          # GOOS=linux go build main.go
+        zip_name: "{{ lambda_name }}.zip"
+
+    - set_fact:
+        s3_bucket: kfc.internal.singapore
+        s3_object_key: "{{ zip_name }}"
+        s3_object_version: ''
+
+    - include_tasks: ../tasks/stack.yml

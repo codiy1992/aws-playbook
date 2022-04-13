@@ -24,6 +24,10 @@
     termination_protection: "{{ termination_protection | default('no') }}"
     template: "{{ cfn_template }}"
     template_parameters: "{{ template_paramters }}"
+    capabilities:
+      - CAPABILITY_IAM
+      - CAPABILITY_NAMED_IAM
+      - CAPABILITY_AUTO_EXPAND
   when: not cfn_stack_exists | bool
 
 - name: create changeset

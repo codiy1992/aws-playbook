@@ -35,6 +35,7 @@ Resources:
             Status: Enabled
             Prefix: _optimized/_thumbnail
             ExpirationInDays: 3
+            NoncurrentVersionExpirationInDays: 3
           - Id: Auto Transition
             Status: Enabled
             Transitions:
@@ -70,3 +71,12 @@ Resources:
             - 's3:PutObject'
           Resource:
             - !Sub 'arn:aws:s3:::${ResourceBucket}/_optimized/*'
+        - Effect: Allow
+          Principal:
+            AWS:
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/lambda-dict-query-LambdaFunctionRole-16GGUWZ4T2TE'
+          Action:
+            - 's3:GetObject*'
+            - 's3:PutObject*'
+          Resource:
+            - !Sub 'arn:aws:s3:::${ResourceBucket}/dictionary/*'
