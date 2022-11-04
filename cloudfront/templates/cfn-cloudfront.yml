@@ -12,9 +12,10 @@ Resources:
         Enabled: True
         HttpVersion: http2
         IPV6Enabled: False
+        DefaultRootObject: index.html
         # WebACLId: !GetAtt WebACL.Arn
         DefaultCacheBehavior:
-          AllowedMethods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE'] # For Forward Requests To Origin
+          AllowedMethods: ['GET', 'HEAD', 'OPTIONS'] # For Forward Requests To Origin
           CachedMethods: ['GET', 'HEAD', 'OPTIONS'] # For Cache Response
           CachePolicyId: !Ref 'CachePolicy'
           OriginRequestPolicyId: !Ref 'OriginRequestPolicy'
@@ -41,15 +42,19 @@ Resources:
 {% if (origin_path | default(false)) %}
             OriginPath: {{ origin_path }}
 {% endif %}
+            OriginAccessControlId: !GetAtt 'OriginAccessControl.Id'
             S3OriginConfig:
-              # Only Allow CloudFront URL To Access S3 Bucket Objects, Disable Amazon S3 URL
-              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginAccessIdentity}
+              OriginAccessIdentity: ''
 
-  OriginAccessIdentity:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
     Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: 'cloudfront origin access identity for {{ alias }}'
+      OriginAccessControlConfig:
+          Description: Use OAC Instead of old OAI
+          Name: 'OAC for {{ alias }}'
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
 
   # 缓存策略
   CachePolicy:

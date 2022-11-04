@@ -6,11 +6,12 @@
     - set_fact:
         region: us-east-1
         stack_name: lambda-cdn-image-resize-origin-response
-        cfn_template_ansible: ../templates/cfn-cdn-image-resize-origin-response.yml
+        cfn_template_ansible: ../templates/cfn-cdn-image-resize.yml
 
     - set_fact:
         lambda_language: nodejs14.x
         lambda_entry: index.js
+        lambda_timeout: 30
         lambda_memory_size: 256
         lambda_name: func-cdn-image-resize-origin-response
         alarm_sns_stack_name: sns-alarm

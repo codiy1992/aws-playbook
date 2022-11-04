@@ -18,7 +18,7 @@
         with_cache_querystring: true
         with_forwarded_querystring: true
         with_lambda_function: true
-        viewer_request_function_version: func-cdn-image-resize-viewer-request:18
-        origin_response_function_version: func-cdn-image-resize-origin-response:20
+        viewer_request_function_version: func-cdn-image-resize-viewer-request:19
+        origin_response_function_version: func-cdn-image-resize-origin-response:21
 
     - include_tasks: ./tasks/stack.yml

@@ -8,14 +8,17 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: {{ bucket_name }}
-      AccessControl: PublicRead
+      AccessControl: Private
       VersioningConfiguration:
         Status: Suspended
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        IgnorePublicAcls: false
-        BlockPublicPolicy: false
-        RestrictPublicBuckets: false
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders: ['Authorization', '*']
@@ -51,17 +54,20 @@ Resources:
         Statement:
         - Effect: Allow
           Principal:
-            AWS:
-              - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E1OLTD0NSCR6TP'
+            Service: 'cloudfront.amazonaws.com'
           Action: 's3:GetObject'
           Resource: !Sub 'arn:aws:s3:::${ResourceBucket}/*'
+          Condition:
+            StringEquals:
+              AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/E12P4WIM1DMOG9'
         - Effect: Allow
           Principal:
-            AWS:
-              - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E2GMNO4PRLDXA5'
+            Service: 'cloudfront.amazonaws.com'
           Action: 's3:GetObject'
-          Resource:
-            - !Sub 'arn:aws:s3:::${ResourceBucket}/_optimized/*'
+          Resource: !Sub 'arn:aws:s3:::${ResourceBucket}/*'
+          Condition:
+            StringEquals:
+              AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/E2YO3L8YAD06WW'
         - Effect: Allow
           Principal:
             AWS:

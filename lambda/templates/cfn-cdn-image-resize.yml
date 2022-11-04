@@ -20,7 +20,6 @@ Parameters:
      Default: {{ alarm_sns_stack_name }}
      Description: alarm sns stack name
 
-
 Resources:
   LambdaEdgeRole:
     Type: AWS::IAM::Role
@@ -64,8 +63,8 @@ Resources:
          S3Key: !Ref 'S3ObjectKey'
          S3ObjectVersion: !Ref 'S3ObjectVersion'
        Runtime: {{ lambda_language }}
-       MemorySize: 128
-       Timeout: 3
+       MemorySize: {{ lambda_memory_size | default(128) }}
+       Timeout: {{ lambda_timeout | default(5) }}
        Environment:
          Variables: {}
 
