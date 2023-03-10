@@ -26,4 +26,5 @@ Resources:
             Status: Enabled
             Transitions:
               - TransitionInDays: 3
-                StorageClass: GLACIER_IR
+                StorageClass: INTELLIGENT_TIERING
+                # StorageClass: GLACIER_IR
