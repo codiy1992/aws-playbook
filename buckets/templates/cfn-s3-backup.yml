@@ -22,9 +22,8 @@ Resources:
             Status: Enabled
             AbortIncompleteMultipartUpload:
               DaysAfterInitiation: 3
-          - Id: Auto-Trans-Calibre
+          - Id: Auto-Trans
             Status: Enabled
-            Prefix: calibre
             Transitions:
               - TransitionInDays: 3
                 StorageClass: GLACIER_IR
