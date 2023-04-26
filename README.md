@@ -35,6 +35,27 @@ Distribution `s3.codiy.net` for whole bucket objects.
 * Upload lambda source code zip file to deploy lambda function
 * By lifecycle configuration will automatically expiration and delete lambda source code zip files.
 
+## Pricing
+
+|S3 Intelligent - Tiering* 	|Automatic cost savings for data with unknown or changing access patterns|
+|-|-|
+|Data Transfer OUT From Amazon S3 To Internet (First 10 TB) / Month	|$0.09 per GB|
+|Monitoring and Automation, All Storage / Month (Objects > 128 KB)	|$0.0025 per 1,000 objects|
+|Frequent Access Tier, First 50 TB / Month	|$0.023 per GB|
+|Frequent Access Tier, Next 450 TB / Month	|$0.022 per GB|
+|Frequent Access Tier, Over 500 TB / Month	|$0.021 per GB|
+|Infrequent Access Tier, All Storage / Month	|$0.0125 per GB|
+|Archive Instant Access Tier, All Storage / Month	|$0.004 per GB|
+
+100,000 Objects == $0.25
+100G * 0.004 == $0.4
+
+Download 100G == 100 * 0.09 == $9
+
+
+
 ## References
 
 * [HoraceShmorace/Image-Flex](https://github.com/HoraceShmorace/Image-Flex)
+* [https://aws.amazon.com/s3/pricing/](https://aws.amazon.com/s3/pricing/)
+* [https://aws.amazon.com/cloudfront/pricing/]( https://aws.amazon.com/cloudfront/pricing/)
