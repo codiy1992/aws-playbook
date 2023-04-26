@@ -1,0 +1,17 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: us-east-1
+        stack_name: cdn-backup-codiy-net
+        cfn_template_ansible: ../templates/cfn-cloudfront.yml
+
+    - set_fact:
+        alias: backup.codiy.net
+        bucekt_name: kfc.backup
+        policy_suffix: BackupCodiyNet
+
+    - include_tasks: ./tasks/stack.yml

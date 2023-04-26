@@ -27,4 +27,19 @@ Resources:
             Transitions:
               - TransitionInDays: 3
                 StorageClass: INTELLIGENT_TIERING
-                # StorageClass: GLACIER_IR
+
+  # ResourceBucketPolicy:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   Properties:
+  #     Bucket: !Ref 'BackupBucket'
+  #     PolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #       - Effect: Allow
+  #         Principal:
+  #           Service: 'cloudfront.amazonaws.com'
+  #         Action: 's3:*'
+  #         Resource: !Sub 'arn:aws:s3:::${BackupBucket}/*'
+  #         Condition:
+  #           StringEquals:
+  #             AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/E7XYZJXDBH60N'

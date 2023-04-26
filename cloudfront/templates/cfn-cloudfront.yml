@@ -38,7 +38,7 @@ Resources:
           - ConnectionAttempts: 3
             ConnectionTimeout: 10
             Id: s3-origin
-            DomainName: s3.codiy.net.s3.ap-southeast-1.amazonaws.com
+            DomainName: "{{ bucekt_name | default('s3.codiy.net') }}.s3.{{ region }}.amazonaws.com"
 {% if (origin_path | default(false)) %}
             OriginPath: {{ origin_path }}
 {% endif %}
