@@ -1,0 +1,16 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        env: prod
+        region: ap-southeast-1
+        stack_name: vpc-prod
+        vpc_name: vpc-prod
+        vpc_cidr: 10.0
+        vpc_host_zone_coment: My VPC
+        cfn_template_ansible: ../templates/cfn-vpc.yml
+
+    - include_tasks: ../tasks/stack.yml

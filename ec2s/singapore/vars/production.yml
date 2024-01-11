@@ -1,0 +1,5 @@
+---
+env: production
+region: ap-southeast-1
+vpc_stack_name: vpc-prod
+alarm_sns_stack_name: sns-alarm

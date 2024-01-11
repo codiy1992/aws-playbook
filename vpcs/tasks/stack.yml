@@ -1,0 +1,9 @@
+- set_fact:
+    cfn_template: "/tmp/cfn-template-{{ stack_name }}"
+
+- name:
+  template:
+    src: "{{ cfn_template_ansible }}"
+    dest: "{{ cfn_template }}"
+
+- include_tasks: ../../stack.yml

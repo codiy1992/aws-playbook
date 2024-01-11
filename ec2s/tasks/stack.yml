@@ -1,0 +1,32 @@
+- name: Amazon Linux2 Image For Arm64
+  ec2_ami_info:
+    owners: "{{ ami_owners |default(137112412989)}}"
+    region: "{{ region }}"
+    filters:
+      name: "al2023-ami-2023.*-kernel-6.1-arm64"
+  register: ami_facts
+
+- set_fact:
+    latest_ami: >
+      {{ ami_facts.images | sort(attribute='creation_date') | last }}
+  when: ami_facts.images | length > 0
+
+- debug: var=latest_ami.image_id
+  when: ami_facts.images | length > 0
+
+- set_fact:
+    ec2_image_id: "{{ latest_ami.image_id }}"
+  when: (ami_facts.images | length > 0) and (ec2_image_id is undefined or (ec2_image_id | length <= 0) )
+
+- set_fact:
+    cfn_template: "/tmp/cfn-template-{{ stack_name }}"
+
+- set_fact:
+    timestamp: "{{lookup('pipe', 'date +%s')}}"
+
+- name:
+  template:
+    src: "{{ cfn_template_ansible }}"
+    dest: "{{ cfn_template }}"
+
+- include_tasks: ../../stack.yml

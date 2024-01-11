@@ -1,0 +1,248 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ec2 instance
+
+Parameters:
+  VPCStackName:
+    Type: String
+    Default: {{ vpc_stack_name }}
+    Description: vpc stack name
+
+  AlarmSNSStackName:
+     Type: String
+     Default: {{ alarm_sns_stack_name }}
+     Description: alarm sns stack name
+
+Resources:
+
+  EC2AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: {{ resource_prefix_name |default('worknode') }}-{{ worknode }}
+      AvailabilityZones:
+        Fn::GetAZs: {Ref: 'AWS::Region'}
+      Cooldown: 300
+      DesiredCapacity: "{{ desire_count | default(0) }}"
+      HealthCheckGracePeriod: 300
+      HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref 'EC2LaunchTemplate'
+        Version: !GetAtt 'EC2LaunchTemplate.LatestVersionNumber'
+      MaxSize: {{ max_size | default(3) }}
+      MetricsCollection:
+        - Granularity: 1Minute
+      MinSize: {{ min_size | default(0) }}
+{% if with_existing_elb_target_group | default(false) %}
+      TargetGroupARNs:
+        - {{ existing_elb_target_group_arn }}
+{% endif %}
+{% if with_elb_target_group | default(false) %}
+      TargetGroupARNs:
+        - !Ref 'TargetGroup'
+{% endif %}
+{% if with_sns_alarm | default(true) %}
+      NotificationConfigurations:
+        - NotificationTypes:
+            - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+            - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+            - autoscaling:TEST_NOTIFICATION
+          TopicARN:
+            Fn::ImportValue:
+              !Join [':', [!Ref 'AlarmSNSStackName', 'AlarmSNSArn']]
+{% endif %}
+      TerminationPolicies:
+        - OldestInstance
+        - OldestLaunchTemplate
+        - Default
+      VPCZoneIdentifier:
+        - Fn::ImportValue:
+            !Join [':', [!Ref 'VPCStackName', 'PublicSubnetOne']]
+        - Fn::ImportValue:
+            !Join [':', [!Ref 'VPCStackName', 'PublicSubnetTwo']]
+{% if (has_three_subnets |default(true)) %}
+        - Fn::ImportValue:
+            !Join [':', [!Ref 'VPCStackName', 'PublicSubnetThree']]
+{% endif %}
+
+  EC2LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: {{ resource_prefix_name |default('worknode') }}-{{ worknode }}
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              DeleteOnTermination: true
+              VolumeSize: {{ root_disk_size | default(8) }}
+              VolumeType: gp3
+{% if (block_disk_size > 0) %}
+          - DeviceName: /dev/sdb
+            Ebs:
+              DeleteOnTermination: true
+              VolumeSize: {{ block_disk_size | default(20) }}
+              VolumeType: gp3
+{% endif %}
+        DisableApiTermination: false
+        EbsOptimized: true
+        IamInstanceProfile:
+          Arn: !GetAtt 'EC2InstanceProfile.Arn'
+        ImageId: {{ ec2_image_id }}
+        InstanceInitiatedShutdownBehavior: stop
+        InstanceType: {{ ec2_instance_type | default('t3.small') }}
+        KeyName: {{ key_name }}
+        Monitoring:
+          Enabled: true
+        NetworkInterfaces:
+          - DeviceIndex: 0
+{% if (with_public_ipv4 | default(false)) %}
+            AssociatePublicIpAddress: true
+{% else %}
+            AssociatePublicIpAddress: false
+{% endif %}
+
+            SubnetId:
+              Fn::ImportValue:
+                !Join [':', [!Ref 'VPCStackName', '{{ ec2_subnet | default("PublicSubnetOne") }}']]
+            Groups:
+              - Fn::ImportValue:
+                  !Join [':', [!Ref 'VPCStackName', 'SGSSH']]
+              - Fn::ImportValue:
+                  !Join [':', [!Ref 'VPCStackName', 'SGDefault']]
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: {{ worknode }}
+              - Key: Project
+                Value: codiy.net
+              - Key: Env
+                Value: {{ env }}
+        UserData: {{ user_data | b64encode }}
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+{% if (with_administrator | default(false)) %}
+        - !Ref 'EC2AdministratorRole'
+{% else %}
+        - !Ref 'EC2Role'
+{% endif %}
+
+{% if (with_administrator | default(false)) %}
+  EC2AdministratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join
+                  - '-'
+                  - - 'Kfc'
+                    - 'EC2AdministratorRole'
+                    - {{ stack_name }}
+      Path: /
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'ec2.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+{% endif %}
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join
+                  - '-'
+                  - - 'kfc'
+                    - 'EC2Role'
+                    - {{ stack_name }}
+      Path: /
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'ec2.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+      Policies:
+        - PolicyName: !Join
+                        - '-'
+                        - - 'ASGLifecycleHook'
+                          - 'Policy'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'autoscaling:CompleteLifecycleAction'
+                Effect: Allow
+                Resource: '*'
+        - PolicyName: !Join
+                        - '-'
+                        - - 'SSMSessionManager'
+                          - 'Policy'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'ssmmessages:CreateControlChannel'
+                  - 'ssmmessages:CreateDataChannel'
+                  - 'ssmmessages:OpenControlChannel'
+                  - 'ssmmessages:OpenDataChannel'
+                  - 'ssm:UpdateInstanceInformation'
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - 's3:GetEncryptionConfiguration'
+                Effect: Allow
+                Resource: '*'
+        - PolicyName: !Join
+                        - '-'
+                        - - 'SSMRunCommand'
+                          - 'Policy'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'ssm:UpdateInstanceInformation'
+                  - 'ssm:ListCommands'
+                  - 'ssm:ListCommandInvocations'
+                  - 'ssm:GetDocument'
+                  - 'ssm:ListAssociations'
+                  - 'ssm:ListInstanceAssociations'
+                  - 'ec2messages:GetMessages'
+                  - 'ec2messages:AcknowledgeMessage'
+                  - 'ec2messages:SendReply'
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                  - 'ssm:SendCommand'
+                Effect: Allow
+                Resource:
+                  - 'arn:aws:ssm:*::document/kfc-*'
+              - Action:
+                  - 'ssm:SendCommand'
+                Effect: Allow
+                Condition:
+                  StringLike:
+                    ssm:resourceTag/Env: ['testing', 'simulation', 'staging', 'prod']
+                    ssm:resourceTag/Project: ['codiy.net']
+                  StringNotLike:
+                    ssm:resourceTag/Name: ['executor']
+                Resource: 'arn:aws:ec2:*:*:instance/*'
