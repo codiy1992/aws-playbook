@@ -6,7 +6,7 @@ echo '
 ' >> /etc/security/limits.conf
 
 # Step2: Install requirements
-yum update -y && yum install -y git docker wget curl
+yum update -y && yum install -y git docker wget
 
 {% if (block_disk_size > 0) %}
 # Step3: Mount EBS
@@ -43,54 +43,8 @@ wget -O /home/ec2-user/.vimrc https://gist.githubusercontent.com/codiy1992/a9739
 cp --force /home/ec2-user/.vimrc /root/.vimrc
 chown ec2-user.ec2-user /home/ec2-user/.vimrc
 
-# Step6: Authorize My SSH Public Key
-wget -O - https://gist.githubusercontent.com/codiy1992/a97395d00ca48c4c3ed92c1aa472b12c/raw/id_rsa.pub \
-    >> /home/ec2-user/.ssh/authorized_keys
-
 # Step7: Install Docker Compose
 mkdir -p /usr/local/lib/docker/cli-plugins
 curl -SL "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
 chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-# Step8: Install CloudWatch Agent
-# wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/arm64/latest/amazon-cloudwatch-agent.rpm
-# sudo rpm -U ./amazon-cloudwatch-agent.rpm
-#
-# echo -e '{
-#     "metrics": {
-#         "append_dimensions": {
-#             "InstanceId": "${aws:InstanceId}",
-#             "AutoScalingGroupName": "${aws:AutoScalingGroupName}"
-#         },
-#         "metrics_collected": {
-#             "mem": {
-#                 "metrics_collection_interval": 60,
-#                 "measurement": [
-#                     "mem_used_percent"
-#                 ]
-#             },
-#             "disk": {
-#                 "metrics_collection_interval": 60,
-#                 "resources": [
-#                     "/",
-#                     "/data"
-#                 ],
-#                 "measurement": [
-#                     "used_percent"
-#                 ]
-#             }
-#         },
-#         "aggregation_dimensions": [
-#             [
-#                 "AutoScalingGroupName"
-#             ]
-#         ]
-#     }
-# }'> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-#
-# /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-#     -a fetch-config -m ec2 \
-#     -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
-#     -s
-# /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-#     -m ec2 -a status
