@@ -23,6 +23,12 @@ Resources:
         - Key: Name
           Value: {{ vpc_name }}
 
+  IPv6CidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      VpcId: !Ref VPC
+      AmazonProvidedIpv6CidrBlock: true
+
   PublicSubnetOne:
     Type: AWS::EC2::Subnet
     Properties:
@@ -32,6 +38,12 @@ Resources:
          - Fn::GetAZs: {Ref: 'AWS::Region'}
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicOne', 'CIDR']
+      Ipv6CidrBlock:
+        Fn::Sub:
+          - "${VpcPart}${SubnetPart}"
+          - SubnetPart: '1a::/64'
+            VpcPart: !Select [ 0, !Split [ '00::/56', !Select [ 0, !GetAtt VPC.Ipv6CidrBlocks ]]]
+      AssignIpv6AddressOnCreation: true
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -46,6 +58,12 @@ Resources:
          - Fn::GetAZs: {Ref: 'AWS::Region'}
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicTwo', 'CIDR']
+      Ipv6CidrBlock:
+        Fn::Sub:
+          - "${VpcPart}${SubnetPart}"
+          - SubnetPart: '1b::/64'
+            VpcPart: !Select [ 0, !Split [ '00::/56', !Select [ 0, !GetAtt VPC.Ipv6CidrBlocks ]]]
+      AssignIpv6AddressOnCreation: true
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -60,6 +78,12 @@ Resources:
          - Fn::GetAZs: {Ref: 'AWS::Region'}
       VpcId: !Ref 'VPC'
       CidrBlock: !FindInMap ['SubnetConfig', 'PublicThree', 'CIDR']
+      Ipv6CidrBlock:
+        Fn::Sub:
+          - "${VpcPart}${SubnetPart}"
+          - SubnetPart: '1c::/64'
+            VpcPart: !Select [ 0, !Split [ '00::/56', !Select [ 0, !GetAtt VPC.Ipv6CidrBlocks ]]]
+      AssignIpv6AddressOnCreation: true
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
@@ -85,6 +109,14 @@ Resources:
     Properties:
       RouteTableId: !Ref 'PublicRouteTable'
       DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref 'InternetGateway'
+
+  PublicIpv6Route:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachement
+    Properties:
+      DestinationIpv6CidrBlock: ::/0
+      RouteTableId: !Ref 'PublicRouteTable'
       GatewayId: !Ref 'InternetGateway'
 
   PublicSubnetOneRouteTableAssociation:
@@ -120,6 +152,14 @@ Resources:
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
+        - CidrIpv6: ::/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - CidrIpv6: ::/0
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
 
   SGSSH:
     Type: AWS::EC2::SecurityGroup
@@ -129,6 +169,10 @@ Resources:
       VpcId: !Ref 'VPC'
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIpv6: ::/0
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
