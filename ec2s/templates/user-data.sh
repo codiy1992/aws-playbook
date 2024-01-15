@@ -39,12 +39,12 @@ usermod -a -G docker ec2-user
 {% endif %}
 
 # Step5: Config vim
-wget -O /home/ec2-user/.vimrc https://gist.githubusercontent.com/codiy1992/a97395d00ca48c4c3ed92c1aa472b12c/raw/ec2.vimrc
+wget -O /home/ec2-user/.vimrc https://s3.codiy.net/2024/01/ec2.vimrc
 cp --force /home/ec2-user/.vimrc /root/.vimrc
 chown ec2-user.ec2-user /home/ec2-user/.vimrc
 
 # Step7: Install Docker Compose
 mkdir -p /usr/local/lib/docker/cli-plugins
-curl -SL "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/lib/docker/cli-plugins/docker-compose
+curl -SL https://s3.codiy.net/2024/01/docker-compose-linux-aarch64 -o /usr/local/lib/docker/cli-plugins/docker-compose
 chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 

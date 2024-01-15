@@ -11,7 +11,7 @@ Resources:
           - '{{ alias }}'
         Enabled: True
         HttpVersion: http2
-        IPV6Enabled: False
+        IPV6Enabled: True
         DefaultRootObject: index.html
         # WebACLId: !GetAtt WebACL.Arn
         DefaultCacheBehavior:
