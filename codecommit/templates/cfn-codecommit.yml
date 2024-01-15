@@ -1,0 +1,10 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Code Commit
+Resources:
+
+  RepoDockers:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: dockers
+      RepositoryDescription: Docker Container Orchestration Repository
