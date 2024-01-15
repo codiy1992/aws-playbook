@@ -88,3 +88,61 @@ Resources:
               Resource:
                 - 'arn:aws:s3:::kfc.backup/*'
                 - 'arn:aws:s3:::kfc.backup'
+  # ----------------------- Crazy -----------------------
+  Crazy:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: crazy
+      Path: /
+      Policies:
+        - PolicyName: Route53Policy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'route53:ListResourceRecordSets'
+                - 'route53:GetChange'
+                - 'route53:ChangeResourceRecordSets'
+              Resource:
+                - 'arn:aws:route53:::hostedzone/*'
+                - 'arn:aws:route53:::change/*'
+            - Effect: Allow
+              Action:
+                - 'route53:ListHostedZonesByName'
+                - 'route53:ListHostedZones'
+              Resource: '*'
+        - PolicyName: CloudfrontPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'acm:ListCertificates'
+                - 'cloudfront:AssociateAlias'
+                - 'cloudfront:ListTagsForResource'
+                - 'cloudfront:GetDistribution'
+                - 'cloudfront:CreateDistribution'
+                - 'cloudfront:UpdateDistribution'
+                - 'cloudfront:GetDistributionConfig'
+                - 'cloudfront:TagResource'
+                - 'cloudfront:*CachePolicy'
+                - 'cloudfront:*OriginRequestPolicy'
+                - 'cloudfront:*ResponseHeadersPolicy'
+              Resource: '*'
+        - PolicyName: CloudFormationPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'cloudformation:CreateStack'
+                - 'cloudformation:UpdateStack'
+                - 'cloudformation:CreateChangeSet'
+                - 'cloudformation:ExecuteChangeSet'
+                - 'cloudformation:DescribeChangeSet'
+                - 'cloudformation:DeleteChangeSet'
+                - 'cloudformation:DescribeStacks'
+                - 'cloudformation:DescribeStackResource'
+                - 'cloudformation:GetTemplate'
+                - 'cloudformation:ValidateTemplate'
+              Resource:
+                - !Sub 'arn:aws:cloudformation:us-east-1:${AWS::AccountId}:stack/crazy-*'
+
