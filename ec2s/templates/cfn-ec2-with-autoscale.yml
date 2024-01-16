@@ -106,6 +106,8 @@ Resources:
               - Fn::ImportValue:
                   !Join [':', [!Ref 'VPCStackName', 'SGSSH']]
               - Fn::ImportValue:
+                  !Join [':', [!Ref 'VPCStackName', 'SGWeb']]
+              - Fn::ImportValue:
                   !Join [':', [!Ref 'VPCStackName', 'SGDefault']]
         TagSpecifications:
           - ResourceType: instance
