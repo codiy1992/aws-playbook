@@ -11,7 +11,7 @@
         worknode: proxy
         stack_name: ec2-asg-proxy-sg
         with_sns_alarm: false
-        with_public_ipv4: false
+        with_public_ipv4: true
         cfn_template_ansible: ../../templates/cfn-ec2-with-autoscale.yml
 
     - set_fact:
