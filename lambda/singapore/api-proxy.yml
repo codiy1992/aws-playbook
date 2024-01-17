@@ -1,0 +1,30 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+    - set_fact:
+        region: ap-southeast-1
+        stack_name: lambda-api-proxy
+        cfn_template_ansible: ../templates/cfn-common.yml
+
+    - set_fact:
+        lambda_language: nodejs20.x
+        lambda_entry: index.handler
+        lambda_timeout: 30
+        lambda_memory_size: 128
+        lambda_name: func-api-proxy
+        alarm_sns_stack_name: sns-alarm
+
+    - set_fact:
+        src_path: ../src/api-proxy
+        archive_dir: /tmp/lambda/api-proxy
+        script: |
+        zip_name: "{{ lambda_name }}.zip"
+
+    - set_fact:
+        s3_bucket: kfc.internal.singapore
+        s3_object_key: "{{ zip_name }}"
+        s3_object_version: ''
+
+    - include_tasks: ../tasks/stack.yml
