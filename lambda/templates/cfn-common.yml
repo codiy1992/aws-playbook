@@ -77,7 +77,7 @@ Resources:
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 1
-      DatapointsToAlarm: 1
+      DatapointsToAlarm: 2
       AlarmActions:
         - Fn::ImportValue:
             !Join [':', [!Ref 'AlarmSNSStackName', 'AlarmSNSArn']]
