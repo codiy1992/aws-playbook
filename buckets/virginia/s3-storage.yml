@@ -1,0 +1,15 @@
+---
+- name:
+  hosts: localhost
+  gather_facts: False
+  tasks:
+
+    - set_fact:
+        region: us-east-1
+        stack_name: s3-virginia-storage
+        cfn_template_ansible: ../templates/cfn-s3.yml
+
+    - set_fact:
+        bucket_name: kfc.storage
+
+    - include_tasks: ../tasks/stack.yml

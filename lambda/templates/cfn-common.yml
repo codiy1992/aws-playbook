@@ -76,8 +76,8 @@ Resources:
       Threshold: 0
       Statistic: Sum
       Period: 60
-      EvaluationPeriods: 1
-      DatapointsToAlarm: 2
+      EvaluationPeriods: {{ alarm_evaluation_periods | default(1) }}
+      DatapointsToAlarm: {{ alarm_data_points | default(1) }}
       AlarmActions:
         - Fn::ImportValue:
             !Join [':', [!Ref 'AlarmSNSStackName', 'AlarmSNSArn']]
