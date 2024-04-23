@@ -3,8 +3,13 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Code Commit
 Resources:
 
-  RepoDockers:
+  RepoDotfiles:
     Type: AWS::CodeCommit::Repository
     Properties:
-      RepositoryName: dockers
-      RepositoryDescription: Docker Container Orchestration Repository
+      RepositoryName: dotfiles
+      RepositoryDescription: sensitive data in dotfiles
+  RepoSHSM:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: shsm
+      RepositoryDescription: sensitive data in shsm

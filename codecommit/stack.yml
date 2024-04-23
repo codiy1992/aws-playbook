@@ -5,7 +5,7 @@
   tasks:
 
     - set_fact:
-        region: ap-southeast-1
+        region: us-east-1
         stack_name: code-commit
         cfn_template_ansible: ../templates/cfn-codecommit.yml
 

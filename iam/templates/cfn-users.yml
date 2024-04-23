@@ -119,6 +119,30 @@ Resources:
               Resource:
                 - 'arn:aws:s3:::kfc.storage/*'
                 - 'arn:aws:s3:::kfc.storage'
+  # ----------------------- CodeCommit -----------------------
+  CodeCommit:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: code
+      Path: /
+      Policies:
+        - PolicyName: CodeCommitUserPolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'codecommit:ListRepositories'
+              Resource: '*'
+              Condition:
+                StringEquals:
+                  aws:RequestedRegion: ["us-east-1"]
+            - Effect: Allow
+              Action:
+                - 'codecommit:GitPull'
+                - 'codecommit:GitPush'
+              Resource:
+                - !Sub 'arn:aws:codecommit:us-east-1:${AWS::AccountId}:dotfiles'
+                - !Sub 'arn:aws:codecommit:us-east-1:${AWS::AccountId}:shsm'
   # ----------------------- Crazy -----------------------
   Crazy:
     Type: AWS::IAM::User
