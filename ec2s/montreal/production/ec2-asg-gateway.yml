@@ -51,7 +51,7 @@
           # command
           mkdir -p /data
           sudo dnf update
-          sudo dnf install --allowerasing gnupg2
+          sudo dnf install -y --allowerasing gnupg2
 
 
     - set_fact:
