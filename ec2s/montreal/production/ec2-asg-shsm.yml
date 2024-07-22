@@ -8,8 +8,8 @@
     - set_fact:
         region: ca-central-1
         env: prod
-        worknode: gateway
-        stack_name: ec2-asg-gateway-ca
+        worknode: shsm
+        stack_name: ec2-asg-shsm-ca
         with_sns_alarm: false
         with_public_ipv4: true
         cfn_template_ansible: ../../templates/cfn-ec2-with-autoscale.yml
@@ -19,7 +19,7 @@
         ec2_image_id: ami-0bbca9d58ff8ae660
         with_eip: false
         root_disk_size: 8
-        block_disk_size: 0
+        block_disk_size: 12
         block_disk_mount_path: /data
         ec2_subnet: PublicSubnetOne
         ec2_instance_type: t4g.micro
