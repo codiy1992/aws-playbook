@@ -1,0 +1,5 @@
+---
+env: production
+region: ca-central-1
+vpc_stack_name: vpc-prod
+alarm_sns_stack_name: sns-alarm
