@@ -18,25 +18,12 @@ UUID=$(blkid | grep /dev/nvme1n1 | sed -r 's/.*UUID="([^"]*).*"/UUID=\1/')
 MOUNT="{{ block_disk_mount_path }}  xfs  defaults,nofail  0  2"
 echo "${UUID}  ${MOUNT}" >> /etc/fstab
 chown -R ec2-user.ec2-user {{ block_disk_mount_path }}
+{% endif %}
 
 # Step4: Config docker
-echo '{
-	"log-driver": "json-file",
-	"log-opts": {
-		"max-size": "50m",
-		"max-file":  "1"
-	},
-    "graph": "/data/docker"
-}' > /etc/docker/daemon.json
-systemctl daemon-reload
 systemctl enable docker
 systemctl start docker
 usermod -a -G docker ec2-user
-{% else %}
-systemctl enable docker
-systemctl start docker
-usermod -a -G docker ec2-user
-{% endif %}
 
 # Step5: Config vim
 wget -O /home/ec2-user/.vimrc https://s3.codiy.net/2024/01/ec2.vimrc
