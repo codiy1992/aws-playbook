@@ -16,7 +16,7 @@
 
     - set_fact:
         arm64: true
-        ec2_image_id: ami-0bbca9d58ff8ae660
+        ec2_image_id: ami-0648b031a857bd86a
         with_eip: false
         root_disk_size: 8
         block_disk_size: 12
@@ -56,7 +56,7 @@
 
     - set_fact:
         desire_count: 1
-        min_size: 1
+        min_size: 0
         max_size: 1
 
     - include_tasks: ../../tasks/stack.yml
