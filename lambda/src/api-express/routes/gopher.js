@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 
+//Reference: https://github.com/Esonhugh/Gopherus3/blob/main/gopherus3/module/FastCGI.py
 router.post('/fastcgi', validate([
     body('host').optional(),
     body('port').optional().isNumeric().withMessage('Port must be a number')
