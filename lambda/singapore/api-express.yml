@@ -10,7 +10,7 @@
 
     - set_fact:
         lambda_language: nodejs20.x
-        lambda_entry: index.handler
+        lambda_entry: handler.handler
         lambda_timeout: 30
         lambda_memory_size: 128
         lambda_name: func-api-express
