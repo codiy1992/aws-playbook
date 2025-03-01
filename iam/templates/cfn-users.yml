@@ -92,7 +92,7 @@ Resources:
   BackupSHSM:
     Type: AWS::IAM::User
     Properties:
-      UserName: backup
+      UserName: shsm
       Path: /
       Policies:
         - PolicyName: BackupPolicy
